@@ -8,10 +8,10 @@ const FlowerItem = ({ flower }) => {
   
   const { deleteFlower, clearCurrent } = flowerContext;
 
-  const { flowerName, flowerId , quantityInStock } = flower;
+  const { flowerName, flowerId , quantityInStock, _id} = flower;
   
   const onDelete = () =>{
-    deleteFlower(flowerId);
+    deleteFlower(_id);
     clearCurrent();
     //window.location.reload()
   }
