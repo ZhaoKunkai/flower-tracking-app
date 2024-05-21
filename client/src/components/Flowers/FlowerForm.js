@@ -14,7 +14,7 @@ const FlowerForm = () => {
   },[flowerContext])
 
   const onSubmit = () =>{
-      addFlowers(flower);
+      if (flowerName!==null && quantityToAdd!==null){ addFlowers(flower);}
   }
   //去掉了e.preventDefault,因为在添加花卉的时候会出现先在flowerContext里的flower里面增加一个新的数组。
   //因为flowerId是通过IdGenerator生成的，可能会导致这个问题

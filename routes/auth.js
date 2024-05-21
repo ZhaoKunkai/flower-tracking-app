@@ -39,13 +39,13 @@ router.post('/', [
     try {
        let user = await User.findOne({ email });
        if (!user) {
-        return res.status.json({ msg:'User do not exist' });
+        return res.status.json({ msg:' Invalid Credentials ' });
        }
        //验证用户邮箱是否存在
 
        const isMatch = await bcrypt.compare(password, user.password);
        if(!isMatch){
-         return res.status(400).json({ msg:'Password is not correct' })
+         return res.status(400).json({ msg:' Invalid Credentials ' })
        }
        //验证密码是否正确
     

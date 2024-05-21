@@ -1,23 +1,31 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../middleware/auth');
 const { ObjectId } = require('mongodb');
 const FlowerStock = require('../models/FlowerStock');
 //const generateId = require('../config/idGenerator');
+const { validationResult, check } = require('express-validator');
 
 
 //Add new flower to the inventory
-router.post('/', async (req, res)=> {
+router.post('/', auth, async (req, res)=> {
    try {
-      const { flowerName, quantityToAdd } = req.body;
-      const flower = await FlowerStock.findOne ({ flowerName });
+      const errors = validationResult(req);
+      if(!errors.isEmpty()){
+        return res.status(400).json({ errors:errors.array() });
+      }
 
-      if (!flower) {
+      const { flowerName, quantityToAdd } = req.body;
+      const flower = await FlowerStock.findOne ({ flowerName, user:req.user.id });
+
+      if (!flower ) {
         //const flowerId = await generateId('f');
 
         const flowerNew = new FlowerStock({
             flowerName,
             flowerId: new ObjectId(),
-            quantityInStock:quantityToAdd
+            quantityInStock:quantityToAdd,
+            user:req.user.id
         })
         await flowerNew.save();
         return res.status(200).json( { flowerNew });
@@ -37,9 +45,9 @@ router.post('/', async (req, res)=> {
 });
 
 //得到所有现存的花卉
-router.get('/', async (req, res) => {
+router.get('/', auth,async (req, res) => {
   try {
-     const flowers = await FlowerStock.find({});
+     const flowers = await FlowerStock.find({user:req.user.id});
 
      if (flowers.length === 0) {
        return res.status(404).json({ error: 'No flowers found' });
@@ -53,13 +61,15 @@ router.get('/', async (req, res) => {
 });
 
 //DeleteFlower
-router.delete('/:flowerId', async(req,res)=>{
+router.delete('/:id', auth, async(req,res)=>{
   try {
-       let flower = FlowerStock.findOne({flowerId:req.params.flowerId})
-
+       let flower = await FlowerStock.findById(req.params.id)
+       
        if(!flower) return res.status(404).json({msg:'Flower Not Found'});
-
-       await FlowerStock.findOneAndDelete({flowerId:req.params.flowerId});
+       if(flower.user.toString() !== req.user.id){
+        return res.status(401).json({ msg:'Not authorized' });
+       }
+       await FlowerStock.findByIdAndDelete(req.params.id);
 
        res.json({ msg:'Flower removed'});
   } catch (err) {

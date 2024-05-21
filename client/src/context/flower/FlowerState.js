@@ -7,15 +7,19 @@ import {
     FLOWER_ERROR,
     ADD_FLOWERS,
     DELETE_FLOWER,
-    CLEAR_CURRENT
+    CLEAR_CURRENT,
+    FILTER_FLOWERS,
+    CLEAR_FILTER,
+    CLEAR_FLOWERS
  } from '../type';
 
 const FlowerState = props => {
     const initialState = {
-       flowers:[],
+       flowers:null,
        error:null,
        current:null,
-    }
+       filtered:null,
+    };
     //flowers的初值定义为null容易出问题，这里改成了[]
 
     const[state, dispatch] = useReducer(flowerReducer, initialState);
@@ -59,14 +63,13 @@ const FlowerState = props => {
     }
 
     //Delete Flower
-    const deleteFlower = async flowerId => {
+    const deleteFlower = async id => {
         try {
-            await axios.delete(`/api/inventory/${flowerId}`);
+            await axios.delete(`/api/inventory/${id}`);
             dispatch({
                 type:DELETE_FLOWER,
-                payload:flowerId
+                payload:id
             })
-            console.log(state.flowers);
         } catch (err) {
             dispatch({
                 type:FLOWER_ERROR,
@@ -81,6 +84,28 @@ const FlowerState = props => {
             type:CLEAR_CURRENT
         })
     }
+    
+    //Filter Flowers
+    const filterFlowers = text => {
+        dispatch({
+            type:FILTER_FLOWERS,
+            payload:text
+        })
+    }
+
+    //Clear Filter
+    const clearFilter = ()=>{
+        dispatch({
+            type:CLEAR_FILTER
+        })
+    }
+
+    //Clear Flowers
+    const clearFlowers = ()=>{
+        dispatch({
+            type:CLEAR_FLOWERS
+        })
+    }
 return (
         <FlowerContext.Provider
           value = {{
@@ -88,7 +113,10 @@ return (
             getFlowers,
             addFlowers,
             deleteFlower,
-            clearCurrent
+            clearCurrent,
+            filterFlowers,
+            clearFilter,
+            clearFlowers
           }}>
             {props.children}
         </FlowerContext.Provider>)
